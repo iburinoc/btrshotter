@@ -1,0 +1,4 @@
+(executable
+ (name btrshotter)
+ (libraries btrshotter)
+ (preprocess (pps ppx_jane)))
