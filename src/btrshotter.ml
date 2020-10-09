@@ -10,31 +10,43 @@ let run ~source ~dest ~dry_run =
 ;;
 
 let command =
-  Command.async_or_error ~summary:"Manage btrfs snapshots"
+  Command.async_or_error
+    ~summary:"Manage btrfs snapshots"
     (let open Command.Let_syntax in
     let%map_open source =
-      flag "source" (required string) ~doc:" path to the subvolume to snapshot"
+      flag "src" (required string) ~doc:" path to the subvolume to snapshot"
     and dest =
-      flag "dest" (required string)
+      flag
+        "dst"
+        (required string)
         ~doc:" path to the subvolume where the snapshots will be placed"
     and dry_run =
-      flag "dry-run" no_arg
+      flag
+        "dry-run"
+        no_arg
         ~doc:
-          " whether to run in dry-run mode (no commands will actually be run \
-           in dry-run mode)"
+          " whether to run in dry-run mode (no commands will actually be run in dry-run \
+           mode)"
     in
     fun () ->
+      let open Deferred.Or_error.Let_syntax in
       print_s
         [%message
-          "Snapshotting subvolume from source to dest "
-            (source : string)
-            (dest : string)];
+          "Snapshotting subvolume from source to dest " (source : string) (dest : string)];
+      let%bind () =
+        if (not (Int.equal (Unix.getuid ()) 0)) && not dry_run
+        then Deferred.return (error_s [%message "Must be run as root"])
+        else return ()
+      in
       run ~source ~dest ~dry_run)
 ;;
 
 let%expect_test "dry run looks good" =
-  run ~source:"/path/to/source" ~dest:"/path/to/dest" ~dry_run:true >>| ok_exn;
-  [%expect {|
+  let%bind () =
+    run ~source:"/path/to/source" ~dest:"/path/to/dest" ~dry_run:true >>| ok_exn
+  in
+  [%expect
+    {|
     btrfs subvolume show /path/to/source
     btrfs subvolume show /path/to/dest |}]
 ;;
