@@ -1,0 +1,11 @@
+before_install:
+- sudo apt-get update
+- sudo apt-get -y install opam
+
+install:
+- opam install -y opam core async ppx_jane
+
+script:
+- dune build
+- dune runtest
+- sudo bash -c "test/run_root_fs_test.sh test/take_snapshot.sh"
