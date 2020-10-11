@@ -53,7 +53,6 @@ let command =
 ;;
 
 let%expect_test "dry run looks good" =
-  print_s [%sexp (am_running_test : bool)];
   let%bind () =
     take_snapshot
       ~time_source:(Time_source.create ~now:Time_ns.epoch () |> Time_source.read_only)
@@ -65,8 +64,7 @@ let%expect_test "dry run looks good" =
   in
   [%expect
     {|
-    true
     btrfs subvolume show /path/to/source
     btrfs subvolume show /path/to/dest
-    btrfs subvolume snapshot create -r /path/to/source /path/to/dest/1970-01-01_00.00 |}]
+    btrfs subvolume snapshot -r /path/to/source /path/to/dest/1970-01-01_00.00 |}]
 ;;

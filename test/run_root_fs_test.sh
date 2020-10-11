@@ -18,8 +18,12 @@ fs="$root/fs"
 mkdir "$fs"
 mount "$dev" "$fs"
 
-"$@" "$fs"
+function cleanup () {
+    umount "$fs"
+    losetup -d "$dev"
+    rm "$image"
+}
 
-umount "$fs"
-losetup -d "$dev"
-rm "$image"
+trap cleanup EXIT
+
+"$@" "$fs"

@@ -9,10 +9,7 @@ let ensure_is_subvolume cmd_runner ~path =
 ;;
 
 let create_snapshot cmd_runner ~source ~dest =
-  Cmd_runner.run
-    cmd_runner
-    ~prog
-    ~args:[ "subvolume"; "snapshot"; "create"; "-r"; source; dest ]
+  Cmd_runner.run cmd_runner ~prog ~args:[ "subvolume"; "snapshot"; "-r"; source; dest ]
   >>| Or_error.ignore_m
 ;;
 
