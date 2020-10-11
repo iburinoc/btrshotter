@@ -2,7 +2,7 @@ language: c
 before_install:
 - sudo apt-get update
 - sudo apt-get -y install opam
-- opam init --compiler=ocaml
+- opam init --compiler=ocaml-base-compiler
 
 install:
 - opam install -y opam core async ppx_jane
