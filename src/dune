@@ -1,5 +1,10 @@
 (library
  (name btrshotter)
  (libraries core async)
- (preprocess (pps ppx_jane))
- (inline_tests))
+ (preprocess (pps ppx_jane ppx_inline_test))
+ (inline_tests)
+ )
+
+; This is necessary because I can't find another way to make am_running_test be
+; true
+(env (_ (env-vars (TESTING_FRAMEWORK _))))
