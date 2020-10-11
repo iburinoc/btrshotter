@@ -6,7 +6,7 @@ let create_name time =
   let time =
     Time_ns.to_span_since_epoch time
     |> Time_ns.Span.to_sec
-    |> if am_running_inline_test then Unix.gmtime else Unix.localtime
+    |> if am_running_test then Unix.gmtime else Unix.localtime
   in
   Core.Unix.strftime time "%F_%H.%M"
 ;;
@@ -68,5 +68,5 @@ let%expect_test "dry run looks good" =
     true
     btrfs subvolume show /path/to/source
     btrfs subvolume show /path/to/dest
-    btrfs subvolume snapshot create -r /path/to/source /path/to/dest/1969-12-31_19.00 |}]
+    btrfs subvolume snapshot create -r /path/to/source /path/to/dest/1970-01-01_00.00 |}]
 ;;
