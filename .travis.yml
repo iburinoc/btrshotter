@@ -1,9 +1,9 @@
 language: c
+dist: focal
 before_install:
 - sudo apt-get update
 - sudo apt-get -y install opam
-- opam init --bare
-- opam switch list-available
+- opam init --compiler=ocaml-base-compiler.4.11.1
 
 install:
 - opam install -y opam core async ppx_jane
