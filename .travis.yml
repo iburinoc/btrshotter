@@ -7,7 +7,7 @@ before_install:
 - eval $(opam env)
 
 install:
-- opam install -y opam core async ppx_jane
+- opam install -y dune core async ppx_jane
 
 script:
 - dune build
