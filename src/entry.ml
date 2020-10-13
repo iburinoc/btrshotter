@@ -1,11 +1,16 @@
 open! Core
 open! Async
 
-type t =
-  { creation_time : Time_ns.t
-  ; name : string
-  }
-[@@deriving fields, sexp_of]
+module T = struct
+  type t =
+    { creation_time : Time_ns.t
+    ; name : string
+    }
+  [@@deriving fields, sexp_of, compare]
+end
+
+include T
+include Comparable.Make_plain (T)
 
 let create = Fields.create
 
@@ -13,7 +18,7 @@ let of_subvolume_list_line line =
   let open Or_error.Let_syntax in
   let items = String.split line ~on:' ' in
   let%bind () =
-    if List.length items >= 14
+    if Int.(List.length items >= 14)
     then Ok ()
     else error_s [%message "Invalid snapshot stats line " (line : string)]
   in
