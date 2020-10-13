@@ -15,6 +15,6 @@ btrfs subvolume create "$dst"
 
 touch "$src/target"
 
-$prog -src "$src" -dst "$dst"
+$prog take -src "$src" -dst "$dst"
 
 ls "$dst"/*/target

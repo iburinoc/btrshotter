@@ -10,3 +10,4 @@ val create_snapshot
   -> unit Or_error.t Deferred.t
 
 val list_entries : Cmd_runner.t -> path:string -> Entry.t list Or_error.t Deferred.t
+val remove_snapshot : Cmd_runner.t -> path:string -> unit Or_error.t Deferred.t

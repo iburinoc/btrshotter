@@ -22,3 +22,8 @@ let list_entries cmd_runner ~path =
   |> Or_error.combine_errors
   |> Deferred.return
 ;;
+
+let remove_snapshot cmd_runner ~path =
+  Cmd_runner.run cmd_runner ~prog ~args:[ "subvolume"; "delete"; path ]
+  >>| Or_error.ignore_m
+;;
