@@ -172,21 +172,19 @@ let default =
 ;;
 
 let create_name t time =
-  let time =
-    Time_ns.to_span_since_epoch time
-    |> Time_ns.Span.to_sec
-    |> if am_running_test then Unix.gmtime else Unix.localtime
-  in
+  let time = Time_ns.to_span_since_epoch time |> Time_ns.Span.to_sec |> Unix.gmtime in
   Core.Unix.strftime time t.naming_scheme
+;;
+
+let get_retentions t entries ~now =
+  Map.mapi t.retention ~f:(fun ~key:span ~data:keep ->
+      let (module Retainer) = Map.find_exn Time_span.retainers span in
+      Retainer.entries_to_keep entries ~now ~keep)
 ;;
 
 let prune_entries t entries ~now =
   let keep =
-    Map.to_alist t.retention
-    |> List.concat_map ~f:(fun (span, keep) ->
-           let (module Retainer) = Map.find_exn Time_span.retainers span in
-           Retainer.entries_to_keep entries ~now ~keep)
-    |> Entry.Set.of_list
+    get_retentions t entries ~now |> Map.data |> List.concat |> Entry.Set.of_list
   in
   let remove = List.filter entries ~f:(fun entry -> not (Set.mem keep entry)) in
   `Keep (Set.to_list keep), `Remove remove

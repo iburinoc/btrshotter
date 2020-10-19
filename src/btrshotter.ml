@@ -58,7 +58,7 @@ let take_snapshot_command =
 
 let prune_snapshots_command =
   Command.async_or_error
-    ~summary:"Take btrfs snapshot"
+    ~summary:"Prune no longer needed snapshots"
     (let open Command.Let_syntax in
     let%map_open path =
       flag "path" (required string) ~doc:" path to the subvolume where the snapshots are"
@@ -94,6 +94,34 @@ let prune_snapshots_command =
             Btrfs.remove_snapshot cmd_runner ~path:(path ^/ name))))
 ;;
 
+let show_retentions_command =
+  Command.async_or_error
+    ~summary:"Show reasons each snapshot is kept"
+    (let open Command.Let_syntax in
+    let%map_open path =
+      flag "path" (required string) ~doc:" path to the subvolume where the snapshots are"
+    and config_file = flag "config" (optional string) ~doc:" path to config file" in
+    fun () ->
+      let open Deferred.Or_error.Let_syntax in
+      print_s [%message "Getting retentions from " (path : string)];
+      let%bind () =
+        if not (Int.equal (Unix.getuid ()) 0)
+        then Deferred.return (error_s [%message "Must be run as root"])
+        else return ()
+      in
+      let%bind config =
+        match config_file with
+        | Some file -> Reader.load_sexp file Config.t_of_sexp
+        | None -> return Config.default
+      in
+      print_s [%message "Using config " (config : Config.t)];
+      let cmd_runner = Cmd_runner.create ~dry_run:false in
+      let%bind entries = Btrfs.list_entries cmd_runner ~path in
+      let retentions = Config.get_retentions config entries ~now:(Time_ns.now ()) in
+      print_s [%sexp (retentions : Entry.t list Config.Time_span.Map.t)];
+      return ())
+;;
+
 let dump_default_config_command =
   Command.async
     ~summary:"Dump default config"
@@ -108,6 +136,7 @@ let command =
     ~summary:"Manage btrfs snapshots"
     [ "take", take_snapshot_command
     ; "prune", prune_snapshots_command
+    ; "show", show_retentions_command
     ; "dump-default-config", dump_default_config_command
     ]
 ;;
